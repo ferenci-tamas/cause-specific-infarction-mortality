@@ -1,6 +1,8 @@
 library(data.table)
 library(ggplot2)
-theme_set(theme_bw() + theme(legend.position = "bottom"))
+theme_set(theme_bw() +
+            theme(legend.position = "bottom",
+                  text = element_text(family = "Helvetica")))
 
 RawData <- readRDS("RawData.rds")
 
@@ -24,7 +26,7 @@ fwrite(data.table(summarycsv(
     COPD + CKD + PCI + Mort30day + Mort1year + event +
     KSH.elsődleges.halál.ok ~ X.92..Diagnózis, data = RawData,
   pctdig = 1, overall = TRUE), keep.rownames = TRUE),
-  "HalalOk_Deskriptiv_3.csv", dec = ",", sep =";", bom = TRUE,
+  "Table1.csv", dec = ",", sep =";", bom = TRUE,
   col.names = FALSE)
 
 cif <- data.table(rbind(
@@ -39,7 +41,7 @@ fwrite(dcast(cif[
                                 round(conf.low*100, 2), " - ",
                                 round(conf.high*100, 2), ")"))],
   time ~ outcome, value.var = "CIF"),
-  "CIFtable.csv", dec = ",", sep =";", bom = TRUE)
+  "Table2.csv", dec = ",", sep =";", bom = TRUE)
 
 ggplot(cif,
        aes(x = time, y = estimate*100, ymin = conf.low*100,
@@ -49,7 +51,7 @@ ggplot(cif,
   theme(legend.position = "bottom") +
   labs(x = "Time [day]", y = "Cumulative incidence [%]",
        color = "", fill = "")
-ggsave("CIFplot.pdf", width = 16, height = 9)
+ggsave("Figure1.pdf", width = 16, height = 9, device = cairo_pdf)
 
 fit <- tidycmprsk::crr(
   survival::Surv(time, event2) ~
@@ -95,6 +97,7 @@ ggplot(fitres,
   geom_vline(xintercept = 1, color = "red") +
   scale_y_discrete(limits = rev) +
   labs(x = "Hazard ratio (HR)", y = "", color = "")
+ggsave("Figure2.pdf", width = 16, height = 9, device = cairo_pdf)
 
 gtsummary::as_hux_xlsx(gtsummary::add_global_p(
   gtsummary::tbl_regression(fit, exp = TRUE), keep = TRUE),
