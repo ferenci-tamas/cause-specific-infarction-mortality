@@ -53,6 +53,16 @@ ggplot(cif,
        color = "", fill = "")
 ggsave("Figure1.pdf", width = 16, height = 9, device = cairo_pdf)
 
+fwrite(dcast(RawData[
+  Mort1year == TRUE,
+  .(event2 = names(table(event2)),
+    stat = paste0(table(event2), " (",
+                  round(prop.table(table(event2))*100, 1), "%)")),
+  .(Mort30day, X.92..Diagnózis)],
+  event2 ~ X.92..Diagnózis + Mort30day,
+  value.var = "stat"), "Table3.csv",
+  dec = ",", sep =";", bom = TRUE)
+
 fit <- tidycmprsk::crr(
   survival::Surv(time, event2) ~
     X.92..Diagnózis + AGE + SEX + PRIOR_MI + HF + HT +
